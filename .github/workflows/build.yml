@@ -1,40 +1,24 @@
 name: Build CoreProtect
+
 on:
-  push:
-    branches:
-      - master
   schedule:
     - cron: '17 0 * * *'
   workflow_dispatch:
 
+env:
+  UPSTREAM_BRANCH: "24.1"
+
 jobs:
-  sync:
+  build-and-release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Checkout fork
+      - name: Checkout upstream repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Sync with upstream
-        run: |
-          git remote add upstream https://github.com/PlayPro/CoreProtect.git
-          git fetch upstream 24.1
-          git merge upstream/24.1 --ff-only || echo "Diverged, skipping"
-          git push origin master || echo "Nothing to push"
-
-  build:
-    runs-on: ubuntu-latest
-    needs: sync
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
+          repository: PlayPro/CoreProtect
+          ref: ${{ env.UPSTREAM_BRANCH }}
           fetch-depth: 0
 
       - name: Set up JDK 25
@@ -65,8 +49,8 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.date.outputs.date }}
-          name: "Dev Build ${{ steps.date.outputs.date }}"
-          body: "Automated build from GitHub repository."
+          name: "Dev Build ${{ steps.date.outputs.date }} (${{ env.UPSTREAM_BRANCH }})"
+          body: "Automated build from PlayPro/CoreProtect branch ${{ env.UPSTREAM_BRANCH }}."
           draft: false
           prerelease: false
           artifacts: target/CoreProtect-*.jar
