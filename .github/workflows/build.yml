@@ -22,9 +22,8 @@ jobs:
       - name: Sync with upstream
         run: |
           git remote add upstream https://github.com/PlayPro/CoreProtect.git
-          git fetch upstream
-          git checkout 24.1
-          git merge upstream/master --ff-only || echo "Diverged, skipping"
+          git fetch upstream 24.1
+          git merge upstream/24.1 --ff-only || echo "Diverged, skipping"
           git push origin master || echo "Nothing to push"
 
   build:
